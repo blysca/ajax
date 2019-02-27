@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    #selAnswers div {
+      display: inline-block;
+      margin: .5rem;
+      padding: .25rem .5rem;
+      border: 1px solid #333;
+    }
+    .cat {
+      font-size: 1rem;
+    }
+    .que {
+      font-size: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>AJAX</h1>
+  <hr>
+  <div>Score : <span id="score"></span></div>
+  <div id="output"></div>
+  <div id="selAnswers"></div>
+  <hr>
+
+  <button type="button" id="btn">Click me</button>
+  <script>
+    const btn = document.getElementById('btn'),
+      output = document.getElementById('output'),
+      selAnswers = document.getElementById('selAnswers');
+    let answer = {
+      'correct': 0,
+      'wrong': 0
+    };
+
+    btn.addEventListener('click', nextItem);
+
+    function nextItem() {
+      btn.style.display = 'none';
+      const url = 'https://opentdb.com/api.php?amount=1';
+      let html = '<h2>Question</h2>';
+      requestAjax(url, function (data) {
+        let obj = data.results[0];
+        html +=
+          `<div>
+            <div class="cat">${obj.category}</div>
+            <div class="que">${obj.question}</div>
+        </div>`;
+        output.innerHTML = html;
+        questionBuilder(obj.correct_answer, obj.incorrect_answers);
+      })
+    }
+
+    function correctAnswerIs() {
+      let els = document.querySelectorAll('#selAnswers div');
+      for (let x = 0; x < els.length; x++) {
+        if (els[x].getAttribute('data-cor') === 'true') {
+          return els[x].innerText;
+        }
+      }
+    }
+
+    function sendAnswer() {
+      let res = event.target.getAttribute('data-cor'),
+        corAnswerVal = correctAnswerIs();
+      btn.style.display = 'inline-block';
+      if (res === 'true') {
+        answer.correct++;
+        selAnswers.innerHTML = `Correct! ${corAnswerVal}`;
+      } else {
+        answer.wrong++;
+        selAnswers.innerHTML = `Wrong. It was ${corAnswerVal}`;
+      }
+
+      document.getElementById('score').innerHTML = `Correct: ${answer.correct}. Wrong: ${answer.wrong}`;
+    }
+
+    function questionBuilder(cor, incor) {
+      let holder = incor;
+      holder.push(cor);
+      holder.sort();
+      selAnswers.innerHTML = '';
+
+      for (let x = 0; x < holder.length; x++) {
+        let el = document.createElement('div'),
+          checker = holder[x] === cor ? true : false;
+        el.setAttribute('data-cor', checker);
+        el.innerHTML = holder[x];
+        el.addEventListener('click', sendAnswer);
+        selAnswers.appendChild(el);
+      }
+    }
+
+    function requestAjax(url, callback) {
+      let xhr = new XMLHttpRequest();
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && (xhr.status >= 200 && xhr.status < 300)) {
+          callback(JSON.parse(xhr.responseText))
+        }
+      };
+
+      xhr.open('GET', url, true);
+      xhr.send();
+
+    }
+  </script>
+</body>
+
+</html>

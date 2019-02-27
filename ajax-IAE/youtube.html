@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>ajax</title>
+</head>
+
+<body>
+  <h1>Ajax</h1>
+  <input type="text" name="searchTerm" value="javascirpt" />
+  <input type="button" value="search" id="search" />
+  <hr />
+  <div id="output"></div>
+  <script>
+    window.onload = function () {
+      document.getElementById('search').addEventListener('click', showResult);
+    };
+
+    function showResult() {
+      let searchTerm = document.querySelector('input[name="searchTerm"]')
+        .value;
+      // const url = 'https://randomuser.me/api/';
+      const url =
+        'https://en.wikipedia.org/w/api.php?format=json&action=opensearch&origin=*&search=' +
+        searchTerm;
+      const output = document.querySelector("#output");
+      output.innerHTML = "<h2>Search Term " + searchTerm + "</h2>";
+      ajaxJS("GET", url, function (response) {
+        for (let x in response) {
+          let holder =
+            typeof response[x] === 'string' ? response[x] : response[x][0];
+          // console.log('response[x] :', response[x]);
+          // console.log('typeof response[x] :', typeof response[x]);
+          console.log('holder :', holder);
+          output.innerHTML += '<div>' + holder + '</div>';
+        }
+      });
+
+      let youTubeKye = 'AIzaSyDy2_wm2zNseUzYxyRfnqLFZlOn8oxdGPI',
+        resultsCount = 4,
+        urlYouTube =
+        `https://www.googleapis.com/youtube/v3/search?&key=${youTubeKye}&part=snippet&q=${searchTerm}&maxResults=${resultsCount}`;
+
+      ajaxJS('GET', urlYouTube, function (data) {
+        for (let d in data.items) {
+          console.log('data.items[d] :', data.items[d]);
+          let ttl = data.items[d].snippet.title,
+            desc = data.items[d].snippet.description,
+            videoId = data.items[d].id.videoId,
+            thumb = data.items[d].snippet.thumbnails.default.url;
+
+          output.innerHTML += `<div>${ttl}<br>${desc}<br>${thumb}</div>`;
+        }
+      });
+    }
+
+    function ajaxJS(method, url, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener("readystatechange", function () {
+        if (method === "GET") {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          }
+        }
+      });
+
+      xhr.open(method, url, true);
+      xhr.send();
+    }
+  </script>
+</body>
+
+</html>

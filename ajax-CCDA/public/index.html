@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Public Index</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html {
+      font-size: 100%;
+    }
+
+    .container {
+      width: 96%;
+      width: calc(100% - 32px);
+      max-width: 960px;
+      padding: 1rem 0;
+      margin: 0 auto;
+    }
+
+    fieldset{
+      padding: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <fieldset>
+      <input type="text" id="currencyTags">
+      <button id="requestRate" type="button">See Rate</button>
+    </fieldset>
+    <hr>
+    <fieldset>
+      <select id="selCurrency">
+        <option value="USD">USD</option>
+      </select>
+      <button class="btn" id="allRates">See All</button>
+      <ul id="output"></ul>
+    </fieldset>
+  </div>
+
+  <script>
+    const allRates = document.getElementById('allRates'),
+      requestRate = document.getElementById('requestRate'),
+      currencyTags = document.getElementById('currencyTags'),
+      selCurrency = document.getElementById('selCurrency'),
+      output = document.getElementById('output'),
+      cur = ['AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP', 'PLN', 'RUB', 'TWD'],
+      url = 'https://api.coinmarketcap.com/v1/ticker/';
+
+    for (let i = 0; i < cur.length; i++) {
+      let option = document.createElement('option'),
+        txt = document.createTextNode(cur[i]);
+      option.appendChild(txt);
+      option.setAttribute('value', cur[i]);
+      selCurrency.insertBefore(option, selCurrency.lastChild);
+
+    }
+
+    allRates.addEventListener('click', getAllRates);
+    requestRate.addEventListener('click', getOneRate);
+
+    function getAllRates() {
+      let curValue = selCurrency.value,
+        url = '/price/' + curValue;
+
+      fetch(url)
+        .then(function (response) {
+          return response.json();
+        }).then(function (data) {
+          outputData(JSON.parse(data), curValue);
+        }).catch(function (error) {
+          console.log(JSON.stringify(error));
+        });
+    }
+
+    function outputData(data, c) {
+      output.innerHTML = '';
+      // let currencyLower = 'price_' + c.toLowerCase();
+      let currencyLower = 'price_btc';
+      data.forEach((element, i) => {
+        // symbol price_usd name
+        console.log(i + ' = ', element);
+
+        let li = document.createElement('li'),
+          span = document.createElement('span');
+
+        span.innerHTML = `${element.name} ${element.symbol} ${element[currencyLower]} ${c}`;
+        li.appendChild(span);
+        output.appendChild(li);
+
+      });
+    }
+
+    function getOneRate() {
+      let curValue = currencyTags.value,
+        urlPlus = 'crypto' + curValue;
+      console.log(urlPlus);
+
+      fetch(urlPlus)
+        .then(function (response) {
+          return response.json();
+        }).then(function (data) {
+          outputData(data);
+        }).catch(function (error) {
+          console.log(JSON.stringify(error));
+        });
+
+    }
+  </script>
+</body>
+
+</html>
